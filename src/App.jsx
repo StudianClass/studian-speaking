@@ -15,7 +15,7 @@ function audioUrl(file) {
   return AUDIO_BASE && file ? AUDIO_BASE + encodeURIComponent(file) + ".mp3" : null;
 }
 
-const LOG_WEBHOOK = "https://script.google.com/a/macros/sangsangsquare.com/s/AKfycbwpFfNqet9bkyZSjWLVD6hK6nu2ebKw_9zB8jl_8jxNhTJsmbpGcHLJA7V2ahVP-_Y8Tw/exec";
+const LOG_WEBHOOK = "https://script.google.com/macros/s/AKfycbwpFfNqet9bkyZSjWLVD6hK6nu2ebKw_9zB8jl_8jxNhTJsmbpGcHLJA7V2ahVP-_Y8Tw/exec";
 function anonId() {
   try {
     let id = localStorage.getItem("studian:uid");
