@@ -138,7 +138,7 @@ async function callClaude(messages, system) {
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, system, messages }),
+    body: JSON.stringify({ messages, system }),
   });
   const data = await res.json();
   return data.content.filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
