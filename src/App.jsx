@@ -205,8 +205,12 @@ export default function App() {
   const finishLoop = () => {
     const stats = window.__loopStats || {};
     window.__pendingLog = {
-      date: todayStr(), userId: anonId(), day: sc.day, scenario: sc.title, level,
-      sentences: stats.sentences ?? "", note: stats.clarity != null ? `또렷함 ${stats.clarity}%` : "",
+      date: new Date().toLocaleString('ko-KR'),
+      userId: anonId(), day: sc.day, scenario: sc.title, level,
+      speakSecs: stats.speakSecs ?? "",
+      sentences: stats.sentences ?? "",
+      targetHit: stats.targetHit ?? "",
+      note: stats.clarity != null ? `또렷함 ${stats.clarity}%` : "",
       wantTomorrow: "",
     };
     window.__logSent = false;
@@ -361,6 +365,7 @@ function StepOutput({ sc, onNext }) {
   const [err, setErr] = useState("");
   const recRef = useRef(null);
   const scrollRef = useRef(null);
+  const speakStartRef = useRef(null);
   const userTurns = messages.filter((m) => m.role === "user").length;
 
   const sysPrompt =
@@ -383,6 +388,7 @@ function StepOutput({ sc, onNext }) {
 
   const sendTurn = useCallback(async (text) => {
     if (!text.trim()) return;
+    if (!speakStartRef.current) speakStartRef.current = Date.now();
     const nextMsgs = [...messages, { role: "user", text }];
     setMessages(nextMsgs);
     setDraft(""); setInterim(""); setThinking(true); setErr("");
@@ -451,7 +457,11 @@ function StepOutput({ sc, onNext }) {
         onClick={() => {
           window.__loopTranscript = messages
             .map((m) => (m.role === "ai" ? sc.aiRole : "LEARNER") + ": " + m.text).join("\n");
-          window.__loopStats = { ...(window.__loopStats || {}), sentences: userTurns };
+          window.__loopStats = {
+            ...(window.__loopStats || {}),
+            sentences: userTurns,
+            speakSecs: speakStartRef.current ? Math.round((Date.now() - speakStartRef.current) / 1000) : "",
+          };
           onNext();
         }}>
         <Flag size={16} /> 대화 끝내고 피드백 받기
@@ -487,7 +497,10 @@ function StepFeedback({ sc, level, onNext }) {
       try {
         const raw = await callClaude([{ role: "user", content: `Transcript (LEARNER = student):\n${transcript}` }], sys);
         const parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
-        if (alive) { setFb(parsed); setLoading(false); }
+        if (alive) {
+          window.__loopStats = { ...(window.__loopStats || {}), targetHit: parsed.communication_success ? 1 : 0 };
+          setFb(parsed); setLoading(false);
+        }
       } catch (e) {
         if (alive) { setErr("피드백을 불러오지 못했어요. 그래도 잘 말했어요 — 다음으로 넘어가요."); setLoading(false); }
       }
