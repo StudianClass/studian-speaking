@@ -148,7 +148,8 @@ async function callClaude(messages, system) {
 function speak(text) {
   try {
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
+    const clean = text.replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|️|‍/gu, '').replace(/\s+/g, ' ').trim();
+    const u = new SpeechSynthesisUtterance(clean);
     u.lang = "en-US";
     const v = window.speechSynthesis.getVoices().find((x) => x.lang.startsWith("en"));
     if (v) u.voice = v;
